@@ -1,0 +1,30 @@
+name: Build LaTeX document
+on: [push]
+jobs:
+  build_latex:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Set up Git repository
+        uses: actions/checkout@v3
+      - name: Compile LaTeX document
+        uses: xu-cheng/latex-action@v2
+        with:
+          root_file: EE230C.tex
+      - name: Upload PDF file
+        uses: actions/upload-artifact@v3
+        with:
+          name: PDF
+          path: EE230C.pdf
+      - name: Pull repo, commit, and push.
+        run: |
+            REMOTE=https://${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}
+            git config --local user.email "${{ github.actor }}@users.noreply.github.com"
+            git config --local user.name "${{ github.actor }}"
+
+            git pull ${REMOTE}
+            git checkout main
+          
+            git add ./\*.pdf
+            git status
+            git commit -am "Autobuild PDFs."
+            git push ${REMOTE} main
